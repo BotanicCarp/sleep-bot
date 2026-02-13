@@ -163,7 +163,8 @@ def run_schedule():
 def job():
     asyncio.run(send_sleep_message(app))
 
-schedule.every().day.at("17:05").do(job)
+schedule.every(1).minutes.do(job)
+
 
 threading.Thread(target=run_schedule).start()
 
