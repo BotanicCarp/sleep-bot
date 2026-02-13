@@ -144,25 +144,28 @@ async def stats_cmd(update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("Нет доступа.")
 
-async def scheduler(app):
+app = ApplicationBuilder().token(TOKEN).build()
+
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("stats", stats_cmd))
+app.add_handler(CallbackQueryHandler(button_handler))
+
+print("Бот работает...")
+
+# планировщик
+import threading
+
+def run_schedule():
     while True:
         schedule.run_pending()
-        await asyncio.sleep(30)
+        time.sleep(30)
 
-def job(app):
-    asyncio.create_task(send_sleep_message(app))
+def job():
+    asyncio.run(send_sleep_message(app))
 
-async def main():
-    app = ApplicationBuilder().token(TOKEN).build()
+schedule.every().day.at("23:00").do(job)
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("stats", stats_cmd))
-    app.add_handler(CallbackQueryHandler(button_handler))
+threading.Thread(target=run_schedule).start()
 
-    schedule.every().day.at("23:00").do(job, app)
-    asyncio.create_task(scheduler(app))
+app.run_polling()
 
-    print("Бот работает...")
-    await app.run_polling()
-
-asyncio.run(main())
